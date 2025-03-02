@@ -1,0 +1,19 @@
+[package]
+name = "m8fsto"
+description = "Command line song file helper"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/Twinside/m8fsto"
+homepage = "https://github.com/Twinside/m8fsto"
+license = "MIT"
+keywords = ["music"]
+
+[dependencies]
+clap = { version = "4.5.31", features = ["derive"] }
+glob = "0.3.2"
+m8-files = { git = "https://github.com/Twinside/m8-files.git" }
+
+[features]
+# Used to fix warnings stemming from array-concat
+# This can be removed when this bug is fixed: https://github.com/inspier/array-concat/pull/4
+const_panic = []
