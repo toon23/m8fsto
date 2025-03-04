@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 
 mod ls_sample;
 mod grep_sample;
+mod bundle;
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
@@ -30,6 +31,16 @@ enum M8Commands {
 
         /// In which folder to search
         path : Option<String>
+    },
+
+    /// Bundle a song, avoiding sample duplication
+    Bundle {
+        /// Specific song only
+        song : String,
+
+        /// Where to write the bundled song, by default
+        /// will be in the same current directory.
+        out_folder: Option<String>
     }
 }
 
@@ -46,6 +57,9 @@ fn main() {
         }
         Some(M8Commands::GrepSample { pattern, path }) => {
             grep_sample::grep_sample(cwd.as_path(), &pattern, &path);
+        }
+        Some(M8Commands::Bundle { song, out_folder }) => {
+            bundle::bundle_song(cwd.as_path(), &song, &out_folder);
         }
     }
 }
