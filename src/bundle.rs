@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs, path::Path};
 use glob::glob;
 use m8_files::{reader::*, Instrument};
 
-fn on_file_blob(cwd: &Path, path: &Path, data: Vec<u8>) {
+fn on_file_blob(_cwd: &Path, _path: &Path, data: Vec<u8>) {
     let mut reader = Reader::new(data);
     let may_song = m8_files::Song::read_from_reader(&mut reader);
     let mut samples = HashMap::new();
@@ -42,7 +42,7 @@ fn on_dir(cwd: &Path, path: &str) {
 }
 
 /// Try to list sample of a given path
-pub fn bundle_song(cwd: &Path, path : &str, out_folder: &Option<String>) {
+pub fn bundle_song(cwd: &Path, path : &str, _out_folder: &Option<String>) {
     let try_as_file = fs::read(path);
     match try_as_file {
         Err(_) => { on_dir(cwd, path) }
