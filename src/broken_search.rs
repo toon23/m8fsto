@@ -1,10 +1,26 @@
-use std::collections::hash_map::Entry;
+use std::{collections::hash_map::Entry, path::PathBuf};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use m8_files::{reader::*, Instrument};
 
 use crate::types::M8FstoErr;
+
+pub(crate) fn sample_to_absolute_path(
+    backup_root: &Path,
+    song_path: &Path,
+    sample_path: &str) -> PathBuf {
+
+    let ch = sample_path.chars().nth(0).unwrap();
+    if ch == '/' {
+        let rel_path : String = sample_path.chars().skip(1).collect();
+        backup_root.join(Path::new(&rel_path))
+    } else {
+        // We just read the file here, we know
+        // it has a parent.
+        song_path.parent().unwrap().join(Path::new(&sample_path))
+    }
+}
 
 fn on_file_blob(cwd: &Path, path: &Path, data: Vec<u8>) -> Result<HashMap<String, Vec<usize>>, M8FstoErr> {
     let mut reader = Reader::new(data);
@@ -20,18 +36,8 @@ fn on_file_blob(cwd: &Path, path: &Path, data: Vec<u8>) -> Result<HashMap<String
     for (i, instr) in song.instruments.iter().enumerate() {
         match instr {
             Instrument::Sampler(sampler) if sampler.sample_path.len() > 0 => {
-                let ch = sampler.sample_path.chars().nth(0).unwrap();
-
                 let full_sample_path =
-                    if ch == '/' {
-                        let rel_path : String =
-                            sampler.sample_path.chars().skip(1).collect();
-                        cwd.join(Path::new(&rel_path))
-                    } else {
-                        // We just read the file here, we know
-                        // it has a parent.
-                        path.parent().unwrap().join(Path::new(&sampler.sample_path))
-                    };
+                    sample_to_absolute_path(cwd, path, &sampler.sample_path );
 
                 if !full_sample_path.exists() {
                     match missings.entry(sampler.sample_path.clone()) {

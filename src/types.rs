@@ -6,7 +6,11 @@ pub enum M8FstoErr {
     UnparseableM8File { path: PathBuf, reason: String },
     InvalidSearchPattern { pattern: String },
     CannotReadFile { path: PathBuf, reason: String },
+    SampleCopyError { path: PathBuf, to: PathBuf, reason: String },
+    SongSerializationError { reason: String },
+    MissingSample { instr: usize, path: PathBuf },
     MultiErrs { inner: Vec<M8FstoErr> },
+    FolderCreationError { path: PathBuf, reason: String },
     InvalidPath
 }
 
@@ -27,6 +31,18 @@ impl Display for M8FstoErr {
                     i.fmt(f)?
                 }
                 Ok(())
+            }
+            M8FstoErr::MissingSample { instr, path } => {
+                writeln!(f, "Missing sample '{:?}' for instrument {}", path, instr)
+            }
+            M8FstoErr::SampleCopyError { path, to , reason } => {
+                writeln!(f, "Cannot copy file '{:?}' to '{:?}' : {}", path, to, reason)
+            }
+            M8FstoErr::SongSerializationError { reason } => {
+                writeln!(f, "Error while writing song : {}", reason)
+            }
+            M8FstoErr::FolderCreationError { path, reason} => {
+                writeln!(f, "Cannot create folder '{:?}' for bundling : '{:?}'", path, reason)
             }
             M8FstoErr::InvalidPath => {
                 writeln!(f, "Invalid path")

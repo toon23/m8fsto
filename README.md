@@ -11,6 +11,20 @@ Available command :
 
 ## Examples
 
+### help
+
+```
+> m8fsto help
+```
+
+Display inline help
+
+To get help for a specific sub command, you can use
+
+```
+> m8fsto help grep-sample
+```
+
 ### ls-sample
 
 ```
@@ -85,3 +99,38 @@ m8fsto broken-search 'C:\Users\twins\tracks\M8 backup'
 
 will search for all of the broken songs present in a M8 sd
 card backup (or directly on the SD card if you want).
+
+### bundle
+
+Allow to create a song bundle using only SD card data or M8 backup
+file.
+
+```
+> m8fsto bundle '\M8 backup\Songs\DONE\2025\01_JAN\IDEABOX2.m8s' '\M8 backup' './rebundle'
+```
+
+This will create a bundle for the song `IDEABOX2.m8s` with the backup being rooted at `/M8 backup`
+and will make the bundle in the folder `./rebundle` (the folder must exists!). A subfolder with
+the song name will be created. You can list the samples on the bundled song after
+
+```
+> m8fsto ls-sample .\rebundle\IDEABOX2\IDEABOX2.m8s
+
+.\rebundle\IDEABOX2\IDEABOX2.m8s
+  00 909KICKK : Samples/0_BT7AADA.wav
+  01 909KICKK : Samples/0_BT7AADA.wav
+  10 : Samples/16_Clap 909 Color 02.wav
+  61 : Samples/97_Minor 7 Dr Sample 01 Cm7.wav
+  62 : Samples/98_Massive Poly Voyetra C1 02.wav
+  64 : Samples/100_Awaiting Raptor Tape Fragments.wav
+  65 : Samples/100_Awaiting Raptor Tape Fragments.wav
+  66 : Samples/102_80s Threat Wasp C2.wav
+```
+
+You can see that the sample path are now relative.
+
+## Garbage printed after the command
+
+Every problematic element is logged, and written on stderr
+after the command has been executed. You can redirect stderr
+to `/dev/null` or an equivalent on your platform of choice.

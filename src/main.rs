@@ -43,8 +43,11 @@ enum M8Commands {
         /// Specific song only
         song : String,
 
+        /// Root folder for the sample path.
+        root : Option<String>,
+
         /// Where to write the bundled song, by default
-        /// will be in current directory.
+        /// will be in the root directory "Bundle" subfolder.
         out_folder: Option<String>
     },
 
@@ -84,8 +87,11 @@ fn main() {
 
             print_errors(broken_search::find_broken_sample(root.as_path()))
         }
-        Some(M8Commands::Bundle { song, out_folder }) => {
-            print_errors(bundle::bundle_song(cwd.as_path(), &song, &out_folder))
+        Some(M8Commands::Bundle { song, root, out_folder }) => {
+            let root =
+                root.map_or_else(|| cwd.clone(), |e| PathBuf::from(e));
+
+            print_errors(bundle::bundle_song(root.as_path(), &song, &out_folder))
         }
     }
 }
