@@ -44,7 +44,7 @@ enum M8Commands {
         song : String,
 
         /// Where to write the bundled song, by default
-        /// will be in the same current directory.
+        /// will be in current directory.
         out_folder: Option<String>
     },
 
@@ -85,7 +85,7 @@ fn main() {
             print_errors(broken_search::find_broken_sample(root.as_path()))
         }
         Some(M8Commands::Bundle { song, out_folder }) => {
-            bundle::bundle_song(cwd.as_path(), &song, &out_folder);
+            print_errors(bundle::bundle_song(cwd.as_path(), &song, &out_folder))
         }
     }
 }

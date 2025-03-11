@@ -13,7 +13,6 @@ fn on_file_blob(cwd: &Path, path: &Path, data: Vec<u8>) -> Result<HashMap<String
         .map_err(|e| M8FstoErr::UnparseableM8File {
             path: path.to_path_buf(),
             reason: format!("{:?}", e)
-
         })?;
 
     let mut missings = HashMap::new();
