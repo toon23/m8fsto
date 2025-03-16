@@ -11,6 +11,11 @@ pub enum M8FstoErr {
     MissingSample { instr: usize, path: PathBuf },
     MultiErrs { inner: Vec<M8FstoErr> },
     FolderCreationError { path: PathBuf, reason: String },
+    SampleInBundleNotRelative {
+        sample_path: String,
+        instrument: usize
+    },
+    FileRemovalFailure { path: PathBuf, reason: String },
     InvalidPath
 }
 
@@ -33,7 +38,7 @@ impl Display for M8FstoErr {
                 Ok(())
             }
             M8FstoErr::MissingSample { instr, path } => {
-                writeln!(f, "Missing sample '{:?}' for instrument {}", path, instr)
+                writeln!(f, "Missing sample '{:?}' for instrument {:02X}", path, instr)
             }
             M8FstoErr::SampleCopyError { path, to , reason } => {
                 writeln!(f, "Cannot copy file '{:?}' to '{:?}' : {}", path, to, reason)
@@ -41,8 +46,14 @@ impl Display for M8FstoErr {
             M8FstoErr::SongSerializationError { reason } => {
                 writeln!(f, "Error while writing song : {}", reason)
             }
+            M8FstoErr::SampleInBundleNotRelative { sample_path, instrument } => {
+                writeln!(f, "The M8 song has non-relative sample \"{}\" for instrument {:02X}", sample_path, instrument)
+            }
             M8FstoErr::FolderCreationError { path, reason} => {
-                writeln!(f, "Cannot create folder '{:?}' for bundling : '{:?}'", path, reason)
+                writeln!(f, "Cannot create folder '{:?}' for bundling : {}", path, reason)
+            }
+            M8FstoErr::FileRemovalFailure { path, reason} => {
+                writeln!(f, "Cannot remove file {:?} : '{}'", path, reason)
             }
             M8FstoErr::InvalidPath => {
                 writeln!(f, "Invalid path")

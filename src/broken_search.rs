@@ -6,13 +6,17 @@ use m8_files::{reader::*, Instrument};
 
 use crate::types::M8FstoErr;
 
+pub(crate) fn is_sample_absolute(sample_path: &str) -> bool {
+    let ch = sample_path.chars().nth(0).unwrap();
+    ch == '/'
+}
+
 pub(crate) fn sample_to_absolute_path(
     backup_root: &Path,
     song_path: &Path,
     sample_path: &str) -> PathBuf {
 
-    let ch = sample_path.chars().nth(0).unwrap();
-    if ch == '/' {
+    if is_sample_absolute(sample_path) {
         let rel_path : String = sample_path.chars().skip(1).collect();
         backup_root.join(Path::new(&rel_path))
     } else {

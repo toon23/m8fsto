@@ -8,6 +8,7 @@ Available command :
  * `grep-sample` : to find song using a specific sample
  * `broken-search` : Find songs with missing samples
  * `bundle` : Bundling a song (without a M8)
+ * `prune-bundle` : Remove unused extra sample from a bundled song.
 
 ## Examples
 
@@ -128,6 +129,27 @@ the song name will be created. You can list the samples on the bundled song afte
 ```
 
 You can see that the sample path are now relative.
+
+### Prune bundle
+
+After multiple rebundling of the same song, unused sample can linger
+in the Sample sub-folder, this command is here to prune all these
+unused samples. You can first try a dry run of the pruning, to avoid
+bad surprises:
+
+```
+> m8fsto prune-bundle --dry-run 'C:\Users\twins\tracks\M8 backup\Bundles\REREVERB\REREVERB.m8s'
+Extra samples to be removed:
+ * '"C:\\Users\\twins\\tracks\\M8 backup\\Bundles\\REREVERB\\Samples\\004_LSDJ.wav"'
+```
+
+This will only list the files to be removed, you can then launch the realy cleaning
+without the `--dry-run` flag:
+
+```
+> m8fsto prune-bundle --dry-run 'C:\Users\twins\tracks\M8 backup\Bundles\REREVERB\REREVERB.m8s'
+Removing '"C:\\Users\\twins\\tracks\\M8 backup\\Bundles\\REREVERB\\Samples\\004_LSDJ.wav"'
+```
 
 ## Garbage printed after the command
 

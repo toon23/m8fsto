@@ -6,6 +6,7 @@ use types::M8FstoErr;
 mod ls_sample;
 mod grep_sample;
 mod bundle;
+mod prune_bundle;
 mod broken_search;
 mod types;
 
@@ -51,12 +52,23 @@ enum M8Commands {
         out_folder: Option<String>
     },
 
+    /// Given a bundled song, remove all local samples
+    /// that are not used within the bundled song.
+    PruneBundle {
+        /// If set to true, it will list the sample to be removed
+        /// and don't do anything. Should be used first.
+        #[arg(short, long)]
+        dry_run : bool,
+
+        /// Specific song only
+        song : String
+    },
+
     /// Try to find broken sample path in songs from a given root
     BrokenSearch {
         /// Optional root folder for the sample path, if not
         /// set, current working directory is used.
         root : Option<String>
-
     }
 }
 
@@ -92,6 +104,9 @@ fn main() {
                 root.map_or_else(|| cwd.clone(), |e| PathBuf::from(e));
 
             print_errors(bundle::bundle_song(root.as_path(), &song, &out_folder))
+        }
+        Some(M8Commands::PruneBundle { dry_run, song}) => {
+            print_errors(prune_bundle::prune_bundle(dry_run, &song))
         }
     }
 }
