@@ -9,6 +9,7 @@ mod bundle;
 mod prune_bundle;
 mod broken_search;
 mod types;
+mod move_samples;
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
@@ -69,6 +70,26 @@ enum M8Commands {
         /// Optional root folder for the sample path, if not
         /// set, current working directory is used.
         root : Option<String>
+    },
+
+    /// Move a sample or sample folder and update songs referencing
+    /// them.
+    Mv {
+        /// If set to true, it will list the sample to be moved
+        /// and the list of modified songs & instruments
+        #[arg(short, long)]
+        dry_run : bool,
+
+        /// Optional root folder for the sample path, if not
+        /// set, current working directory is used.
+        #[arg(short, long)]
+        root: Option<String>,
+
+        /// Source folder or sample
+        from: String,
+
+        /// Destination
+        to: String
     }
 }
 
@@ -107,6 +128,14 @@ fn main() {
         }
         Some(M8Commands::PruneBundle { dry_run, song}) => {
             print_errors(prune_bundle::prune_bundle(dry_run, &song))
+        },
+        Some(M8Commands::Mv { root, dry_run, from, to }) => {
+            let root = root
+                .map_or_else(
+                    || cwd.as_path().to_path_buf(),
+                     |f| PathBuf::from(f));
+
+            print_errors(move_samples::move_samples(&root, dry_run, from, to));
         }
     }
 }

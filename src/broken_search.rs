@@ -66,7 +66,7 @@ pub fn find_broken_sample(cwd: &Path) -> Result<(), M8FstoErr>{
     let pattern = cwd.join("**").join("*.m8s")
         .as_os_str()
         .to_str()
-        .map_or(Err(M8FstoErr::InvalidPath), |v| Ok(v))?
+        .map_or(Err(M8FstoErr::InvalidPath { reason: "Invalid pattern".into() }), |v| Ok(v))?
         // .replace('\\', "/")
         .to_string();
 

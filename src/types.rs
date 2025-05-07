@@ -16,7 +16,8 @@ pub enum M8FstoErr {
         instrument: usize
     },
     FileRemovalFailure { path: PathBuf, reason: String },
-    InvalidPath
+    InvalidPath { reason: String },
+    RenameFailure { path: String }
 }
 
 impl Display for M8FstoErr {
@@ -55,8 +56,11 @@ impl Display for M8FstoErr {
             M8FstoErr::FileRemovalFailure { path, reason} => {
                 writeln!(f, "Cannot remove file {:?} : '{}'", path, reason)
             }
-            M8FstoErr::InvalidPath => {
-                writeln!(f, "Invalid path")
+            M8FstoErr::InvalidPath { reason }=> {
+                writeln!(f, "Invalid path {}", reason)
+            }
+            M8FstoErr::RenameFailure { path } => {
+                writeln!(f, "Cannot rename file or folder \"{:?}\"", path)
             }
         }
     }

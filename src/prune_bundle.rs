@@ -35,8 +35,11 @@ fn on_file_blob(dry_run : bool, song_path: &Path, data: Vec<u8>) -> Result<(), M
     let sample_folder = song_folder.join("Samples");
 
     let mut to_remove = Vec::new();
-    for f in sample_folder.read_dir().map_err(|_e| M8FstoErr::InvalidPath {})? {
-        let entry = f.map_err(|_e| M8FstoErr::InvalidPath)?;
+    for f in sample_folder
+        .read_dir()
+        .map_err(|_e| M8FstoErr::InvalidPath {reason: "Can't read path".into() })? {
+
+        let entry = f.map_err(|_e| M8FstoErr::InvalidPath {reason: "".into()} )?;
         let entry_path = entry.path();
         let rel_folder = entry_path.strip_prefix(song_folder).unwrap();
 
