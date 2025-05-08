@@ -93,8 +93,10 @@ fn on_file_blob(dry_run: bool, swap: &Swap, path: &Path, data: Vec<u8>) -> Resul
 
 }
 
-fn on_dir(dry_run : bool, cwd: &Path, swap: &Swap) -> Result<(), M8FstoErr> {
+fn on_dir(force: bool, dry_run : bool, cwd: &Path, swap: &Swap) -> Result<(), M8FstoErr> {
     let mut errors = vec![];
+    let mut matched_not_serializable = vec![];
+    let mut to_write= vec![];
     let search_pattern =
         glob(&format!("{}/**/*.m8s", cwd.to_str().unwrap()))
         .expect("Failed to read glob pattern");
@@ -114,6 +116,7 @@ fn on_dir(dry_run : bool, cwd: &Path, swap: &Swap) -> Result<(), M8FstoErr> {
                     Ok(file_blob) => {
                         match on_file_blob(dry_run, swap, &path, file_blob) {
                             Ok(None) => {}
+                            Err(M8FstoErr::SongSerializationError { reason: _ }) => matched_not_serializable.push(path),
                             Err(m8err) => errors.push(m8err),
                             Ok(Some(swapped)) if dry_run => {
                                 println!("Song {:?}", &path);
@@ -126,16 +129,25 @@ fn on_dir(dry_run : bool, cwd: &Path, swap: &Swap) -> Result<(), M8FstoErr> {
                                 for (inst, name, path, new_path) in swapped.touched {
                                     println!(" - {} {} \"{}\" -> \"{}\"", inst, name, path, new_path)
                                 }
+
+                                to_write.push((path, swapped.file_data));
                                 
-                                match fs::write(&path, swapped.file_data) {
-                                    Ok(()) => {}
-                                    Err(_) => {
-                                        errors.push(M8FstoErr::SongSerializationError { reason: "File writing error".into() });
-                                    }
-                                }
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    // If we have some file we can't translate, but still want to write
+    // the files
+    if matched_not_serializable.len() == 0 || force {
+        for (path, data) in to_write {
+            match fs::write(&path, data) {
+                Ok(()) => {}
+                Err(_) => {
+                    errors.push(M8FstoErr::SongSerializationError { reason: format!("Error while writing file {:?}", path) });
                 }
             }
         }
@@ -228,6 +240,16 @@ pub fn move_samples(cwd: &Path, dry_run: bool, from: String, to: String) -> Resu
             return Err(M8FstoErr::CannotReadFile { path: from_path, reason: String::from("Neither file nor directory")})
         };
 
-    on_dir(dry_run, &cwd, &move_order)?;
-    move_order.apply_fs()
+    match on_dir(force, dry_run, &cwd, &move_order) {
+        Ok(()) => {
+            std::fs::rename(&from_canon, to_canon)
+                .map_err(|_| M8FstoErr::RenameFailure { path: format!("{:?}", from_canon) })
+        }
+        Err(errs) if force => {
+            std::fs::rename(&from_canon, to_canon)
+                .map_err(|_| M8FstoErr::RenameFailure { path: format!("{:?}", from_canon) })?;
+            Err(errs)
+        }
+        Err(errs) => Err(errs)
+    }
 }

@@ -75,10 +75,15 @@ enum M8Commands {
     /// Move a sample or sample folder and update songs referencing
     /// them.
     Mv {
-        /// If set to true, it will list the sample to be moved
+        /// If set, it will list the sample to be moved
         /// and the list of modified songs & instruments
         #[arg(short, long)]
         dry_run : bool,
+
+        /// If set, it will file will be written even if some
+        /// songs cannot be rewritten (like in 3.x format)
+        #[arg(short, long)]
+        force : bool,
 
         /// Optional root folder for the sample path, if not
         /// set, current working directory is used.
@@ -129,13 +134,13 @@ fn main() {
         Some(M8Commands::PruneBundle { dry_run, song}) => {
             print_errors(prune_bundle::prune_bundle(dry_run, &song))
         },
-        Some(M8Commands::Mv { root, dry_run, from, to }) => {
+        Some(M8Commands::Mv { root, force, dry_run, from, to }) => {
             let root = root
                 .map_or_else(
                     || cwd.as_path().to_path_buf(),
                      |f| PathBuf::from(f));
 
-            print_errors(move_samples::move_samples(&root, dry_run, from, to));
+            print_errors(move_samples::move_samples(&root, force, dry_run, from, to));
         }
     }
 }
