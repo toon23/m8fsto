@@ -9,6 +9,8 @@ Available command :
  * `broken-search` : Find songs with missing samples
  * `bundle` : Bundling a song (without a M8)
  * `prune-bundle` : Remove unused extra sample from a bundled song.
+ * `mv`: move a file or folder, rewriting all song files using the moved samples
+   to point to the new location.
 
 ## Examples
 
@@ -149,6 +151,31 @@ without the `--dry-run` flag:
 ```
 > m8fsto prune-bundle --dry-run 'C:\Users\twins\tracks\M8 backup\Bundles\REREVERB\REREVERB.m8s'
 Removing '"C:\\Users\\twins\\tracks\\M8 backup\\Bundles\\REREVERB\\Samples\\004_LSDJ.wav"'
+```
+
+### mv
+
+
+You can move a folder within a backup, the option `--dry-run` will show all
+songs that should be rewritten:
+
+```
+> m8fsto mv --dry-run --root "$HOME/tracks/M8 backup" "$HOME/tracks/M8 backup/Samples/Packs/Elektron" "$HOME/tracks/M8 backup/Samples/Packs/Elk"
+```
+
+> *This features only works on songs written with M8 firmware version 4 and above, previous firmware are not supported.*
+
+
+if you have song made using older firmware you can use the --force flag to force the action to be performed, otherwize nothing will be applied.
+
+```
+> m8fsto mv --force --root "$HOME/tracks/M8 backup" "$HOME/tracks/M8 backup/Samples/Packs/Elektron" "$HOME/tracks/M8 backup/Samples/Packs/Elk"
+```
+
+You can also move single files:
+
+```
+> m8fsto mv --force --root "$HOME/tracks/M8 backup" "$HOME/tracks/M8 backup/Samples/Drums/Hits/TR909/BD/BT7AADA.wav" "$HOME/tracks/M8 backup/Samples/MY_HH_10.wav"
 ```
 
 ## Garbage printed after the command

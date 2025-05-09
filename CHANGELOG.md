@@ -1,5 +1,10 @@
 # M8fsto changelog
 
+## v0.4 (2025-05-13)
+
+ * Adding `m8fsto mv` command to help move files within a backup/SD card
+   while rewriting the songs pointing to the samples.
+
 ## v0.3
 
  * Firmware 6.0 support

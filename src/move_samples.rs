@@ -13,17 +13,6 @@ enum Swap {
 }
 
 impl Swap {
-    pub fn apply_fs(&self) -> Result<(), M8FstoErr> {
-        match self {
-            Swap::Dir { from, to } => {
-                std::fs::rename(from, to).map_err(| _| M8FstoErr::RenameFailure { path: from.clone() })
-            }
-            Swap::File { from, to } => {
-                std::fs::rename(from, to).map_err(| _| M8FstoErr::RenameFailure { path: from.clone() })
-            }
-        }
-    }
-
     pub fn try_swap(&self, sample_path: &str) -> Option<String> {
         match self {
             Swap::File { from, to } if sample_path == from =>
@@ -191,7 +180,7 @@ pub fn normalize_path(path: &Path) -> PathBuf {
 }
 
 
-pub fn move_samples(cwd: &Path, dry_run: bool, from: String, to: String) -> Result<(), M8FstoErr> {
+pub fn move_samples(cwd: &Path, force:bool, dry_run: bool, from: String, to: String) -> Result<(), M8FstoErr> {
     let cwd = normalize_path(cwd);
 
     let from_path = PathBuf::from(from);
