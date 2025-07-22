@@ -65,11 +65,12 @@ enum M8Commands {
         song : String
     },
 
-    /// Try to find broken sample path in songs from a given root
+    /// Try to find broken sample paths in songs or directories
     BrokenSearch {
-        /// Optional root folder for the sample path, if not
-        /// set, current working directory is used.
-        root : Option<String>
+        /// Optional paths to process: directories or `.m8s` song files.
+        /// If not set, the current working directory is used.
+
+        paths: Vec<String>,
     },
 
     /// Move a sample or sample folder and update songs referencing
@@ -117,13 +118,8 @@ fn main() {
         Some(M8Commands::GrepSample { pattern, path }) => {
             print_errors(grep_sample::grep_sample(cwd.as_path(), &pattern, &path))
         }
-        Some(M8Commands::BrokenSearch { root }) => {
-            let root = root
-                .map_or_else(
-                    || cwd.as_path().to_path_buf(),
-                     |f| PathBuf::from(f));
-
-            print_errors(broken_search::find_broken_sample(root.as_path()))
+        Some(M8Commands::BrokenSearch { paths }) => {
+            print_errors(broken_search::process_paths(cwd.as_path(), &paths))
         }
         Some(M8Commands::Bundle { song, root, out_folder }) => {
             let root =
