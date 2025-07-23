@@ -1,7 +1,8 @@
 # M8fsto changelog
 
-## Unreleased
- * Expanded `m8fsto broken-search` command arguments:
+## v0.4.1 (2025-07-23)
+ * Minor error cleanup (think refactoring)
+ * Expanded `m8fsto broken-search` command arguments: (colonel-blimp PR)
    * `m8fsto broken-search` now accepts multiple arguments
    * Arguments may be any combination of directories and/or `.m8s` song files
 
