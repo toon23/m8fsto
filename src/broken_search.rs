@@ -61,8 +61,8 @@ fn on_file_blob(cwd: &Path, path: &Path, data: Vec<u8>) -> Result<HashMap<String
     Ok(missings)
 }
 
-/// Try to list sample of a given path
-pub fn find_broken_sample(cwd: &Path) -> Result<(), M8FstoErr>{
+/// Recursively search a directory for song files and report broken samples
+pub fn find_broken_samples_under_dir(cwd: &Path) -> Result<(), M8FstoErr>{
     let pattern = cwd.join("**").join("*.m8s")
         .as_os_str()
         .to_str()
@@ -79,40 +79,84 @@ pub fn find_broken_sample(cwd: &Path) -> Result<(), M8FstoErr>{
         match entry {
             Err(_) => {}
             Ok(path) => {
-                let try_as_file = fs::read(&path);
-                match try_as_file {
-                    Err(e) => {
-                        errors.push(M8FstoErr::CannotReadFile {
-                            path: path.to_path_buf(),
-                            reason: format!("{:?}", e)
-                        })
-                    }
-                    Ok(file_blob) => {
-                        match on_file_blob(cwd, path.as_path(), file_blob) {
-                            Ok(result) if result.len() == 0 => {
-                            }
-                            Ok(result) => {
-                                println!("== Broken song {:?}", &path);
-                                for (path, instrs) in result.iter() {
-                                    print!(" * '{}' in instruments [", path);
-                                    for i in instrs {
-                                        print!("{}, ", i)
-                                    }
-                                    println!("]")
-                                }
-                            }
-                            Err(e) => {
-                                errors.push(e);
-                            }
-                        }
-                    }
+                if let Err(e) = find_broken_sample_in_song(path) {
+                    errors.push(e);
                 }
+
             }
         }
-
     }
 
-    if errors.len() == 0 {
+    if errors.is_empty() {
+        Ok(())
+    } else if errors.len() == 1 {
+        Err(errors[0].clone())
+    } else {
+        Err(M8FstoErr::MultiErrs { inner: errors })
+    }
+}
+
+
+/// Report broken samples in a single `.m8s` song file.
+pub fn find_broken_sample_in_song(song_path: PathBuf) -> Result<(), M8FstoErr> {
+    let file_blob = fs::read(&song_path).map_err(|e| M8FstoErr::CannotReadFile {
+        path: song_path.clone(),
+        reason: format!("{:?}", e),
+    })?;
+
+    match on_file_blob(&song_path.parent().unwrap_or(&song_path), &song_path, file_blob) {
+        Ok(result) if result.is_empty() => Ok(()),
+        Ok(result) => {
+            println!("== Broken song {:?}", &song_path);
+            for (sample_path, instrs) in result.iter() {
+                print!(" * '{}' in instruments [", sample_path);
+                for i in instrs {
+                    print!("{}, ", i)
+                }
+                println!("]")
+            }
+            Ok(())
+        }
+        Err(e) => Err(e),
+    }
+}
+
+
+/// Report broken song samples in a list of directories and/or song paths
+pub fn process_paths(cwd: &Path, paths: &[String]) -> Result<(), M8FstoErr> {
+    let mut roots = Vec::new();
+    let mut songs = Vec::new();
+
+    if paths.is_empty() {
+       roots.push(cwd.to_path_buf());
+    }
+
+    for path in paths {
+        let path_buf = PathBuf::from(path);
+        if path_buf.is_dir() {
+            roots.push(path_buf);
+        } else if path_buf.is_file() && path.ends_with(".m8s") {
+            songs.push(path_buf);
+        } else {
+            eprintln!("Warning: Ignoring invalid path: {}", path);
+        }
+    }
+
+    let mut errors = vec![];
+
+    for root in roots {
+        if let Err(e) = find_broken_samples_under_dir(root.as_path()) {
+            errors.push(e);
+        }
+    }
+
+    for song in songs {
+        if let Err(e) = find_broken_sample_in_song(song) {
+            errors.push(e);
+        }
+    }
+
+    if errors.is_empty() {
         Ok(())
     } else if errors.len() == 1 {
         Err(errors[0].clone())
