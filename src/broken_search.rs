@@ -131,6 +131,7 @@ pub fn process_paths(cwd: &Path, paths: &[String]) -> Result<(), M8FstoErr> {
        roots.push(cwd.to_path_buf());
     }
 
+    let mut errors = vec![];
     for path in paths {
         let path_buf = PathBuf::from(path);
         if path_buf.is_dir() {
@@ -138,11 +139,10 @@ pub fn process_paths(cwd: &Path, paths: &[String]) -> Result<(), M8FstoErr> {
         } else if path_buf.is_file() && path.ends_with(".m8s") {
             songs.push(path_buf);
         } else {
+            errors.push(M8FstoErr::InvalidSearchPattern { pattern: path.to_string()});
             eprintln!("Warning: Ignoring invalid path: {}", path);
         }
     }
-
-    let mut errors = vec![];
 
     for root in roots {
         if let Err(e) = find_broken_samples_under_dir(root.as_path()) {
