@@ -1,12 +1,12 @@
 use std::{fs, path::Path};
 use glob::glob;
-use m8_files::{reader::*, Instrument};
+use m8_file_parser::{reader::*, Instrument};
 
 use crate::types::M8FstoErr;
 
 fn on_file_blob(cwd: &Path, path: &Path, data: Vec<u8>) -> Result<(), M8FstoErr> {
     let mut reader = Reader::new(data);
-    let song = m8_files::Song::read_from_reader(&mut reader)
+    let song = m8_file_parser::Song::read_from_reader(&mut reader)
         .map_err(|e| M8FstoErr::UnparseableM8File {
             path: path.to_path_buf(),
             reason: format!("{:?}", e)

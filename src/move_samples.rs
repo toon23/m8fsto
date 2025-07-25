@@ -3,7 +3,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::path::Component;
 use glob::glob;
-use m8_files::{reader::*, Instrument};
+use m8_file_parser::{reader::*, Instrument};
 
 use crate::types::combine;
 use crate::types::FlagBag;
@@ -70,7 +70,7 @@ struct SwappedFile {
 fn on_file_blob(flags: &FlagBag, swap: &Swap, path: &Path, data: Vec<u8>) -> Result<Option<SwappedFile>, M8FstoErr> {
     let mut reader = Reader::new(data.clone());
     let mut touched = vec![];
-    let mut song = m8_files::Song::read_from_reader(&mut reader)
+    let mut song = m8_file_parser::Song::read_from_reader(&mut reader)
         .map_err(|e| M8FstoErr::UnparseableM8File {
             path: path.to_path_buf(),
             reason: format!("{:?}", e)
@@ -106,7 +106,7 @@ fn on_file_blob(flags: &FlagBag, swap: &Swap, path: &Path, data: Vec<u8>) -> Res
     }
 
     let mut writer =
-        m8_files::writer::Writer::new(data);
+        m8_file_parser::writer::Writer::new(data);
 
     song.write(&mut writer)
         .map_err(|reason|

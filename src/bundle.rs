@@ -1,11 +1,11 @@
 use std::{collections::{hash_map::Entry, HashMap}, fs, path::{Path, PathBuf}};
-use m8_files::{reader::*, writer::Writer, Instrument};
+use m8_file_parser::{reader::*, writer::Writer, Instrument};
 
 use crate::{broken_search::sample_to_absolute_path, types::M8FstoErr};
 
 fn on_file_blob(backup_root: &Path, song_path: &Path, out_folder: &Path, data: Vec<u8>) -> Result<(), M8FstoErr> {
     let mut reader = Reader::new(data.clone());
-    let mut song = m8_files::Song::read_from_reader(&mut reader)
+    let mut song = m8_file_parser::Song::read_from_reader(&mut reader)
         .map_err(|e| M8FstoErr::UnparseableM8File {
             path: song_path.to_path_buf(),
             reason: format!("{:?}", e)

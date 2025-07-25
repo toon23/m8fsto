@@ -2,7 +2,7 @@ use std::{collections::hash_map::Entry, path::PathBuf};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-use m8_files::{reader::*, Instrument};
+use m8_file_parser::{reader::*, Instrument};
 
 use crate::types::M8FstoErr;
 
@@ -28,7 +28,7 @@ pub(crate) fn sample_to_absolute_path(
 
 fn on_file_blob(cwd: &Path, path: &Path, data: Vec<u8>) -> Result<HashMap<String, Vec<usize>>, M8FstoErr> {
     let mut reader = Reader::new(data);
-    let song = m8_files::Song::
+    let song = m8_file_parser::Song::
         read_from_reader(&mut reader)
         .map_err(|e| M8FstoErr::UnparseableM8File {
             path: path.to_path_buf(),
