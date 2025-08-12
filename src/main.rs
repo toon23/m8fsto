@@ -1,6 +1,7 @@
-use std::path::PathBuf;
+use std::{io::stdout, path::PathBuf};
 
 use clap::{Parser, Subcommand};
+use clap_num::maybe_hex;
 use types::{FlagBag, M8FstoErr};
 
 mod ls_sample;
@@ -9,6 +10,7 @@ mod bundle;
 mod prune_bundle;
 mod broken_search;
 mod types;
+mod show_song;
 mod move_samples;
 
 #[derive(Parser)]
@@ -22,8 +24,56 @@ struct Cli {
     command: Option<M8Commands>
 }
 
+/// What do we want to print, prefix with 0x to use hexadecimal notation.
+#[derive(Subcommand)]
+enum ShowTarget {
+    /// Print the whole song view
+    Song,
+
+    /// Print the content of a chain
+    Chain {
+        #[clap(value_parser=maybe_hex::<usize>)]
+        id: usize
+    },
+
+    /// Print the content of a phrase
+    Phrase {
+        #[clap(value_parser=maybe_hex::<usize>)]
+        id: usize
+    },
+
+    /// Print the content of a phrase
+    Instrument {
+        #[clap(value_parser=maybe_hex::<usize>)]
+        id: Option<usize>
+    },
+
+    /// Print the content of a table
+    Table {
+        #[clap(value_parser=maybe_hex::<usize>)]
+        id: usize
+    },
+
+    /// Print EQ information
+    Eq {
+        #[clap(value_parser=maybe_hex::<usize>)]
+        id: usize
+    }
+}
+
+#[derive(Parser)]
+struct ShowCommand {
+    #[structopt(subcommand)]
+    pub show_command: ShowTarget,
+
+    /// File to display
+    pub file: String
+}
+
 #[derive(Subcommand)]
 enum M8Commands {
+    Show(ShowCommand),
+
     /// List samples used in M8 song file
     LsSample {
         /// Optional path/folder
@@ -112,6 +162,9 @@ fn main() {
 
     match cli.command {
         None => { println!("Please use a command") }
+        Some(M8Commands::Show(showcmd)) => {
+            print_errors(show_song::show_element(showcmd, &mut stdout()));
+        }
         Some(M8Commands::LsSample { path }) => {
             print_errors(ls_sample::ls_sample(cwd.as_path(), &path))
         }

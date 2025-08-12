@@ -32,7 +32,8 @@ pub enum M8FstoErr {
     },
     FileRemovalFailure { path: PathBuf, reason: String },
     InvalidPath { reason: String },
-    RenameFailure { path: String }
+    RenameFailure { path: String },
+    PrintError
 }
 
 impl M8FstoErr {
@@ -66,6 +67,9 @@ pub fn combine(err: Option<M8FstoErr>, other: M8FstoErr) -> Option<M8FstoErr> {
 impl Display for M8FstoErr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            M8FstoErr::PrintError => {
+                writeln!(f, "Printing error?")
+            },
             M8FstoErr::UnparseableM8File { path, reason } => {
                 writeln!(f, "Can't parse M8 file '{:?}' : {}", path.as_path(), reason)
             }
