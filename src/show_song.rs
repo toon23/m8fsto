@@ -101,19 +101,34 @@ impl<T : Describable> Display for ElemDisplay<T> {
     }
 }
 
-pub fn show_element(show: ShowCommand, w: &mut dyn std::io::Write)  -> Result<(), M8FstoErr> {
-    let song_path = PathBuf::from(show.file);
-    let file_blob = fs::read(song_path.clone())
-        .map_err(|e|
-            M8FstoErr::CannotReadFile { path: song_path.clone(), reason: format!("{:?}", e) })?;
-
-    let mut reader = Reader::new(file_blob);
-    let song = m8_file_parser::Song::read_from_reader(&mut reader)
-        .map_err(|e| M8FstoErr::UnparseableM8File {
-            path: song_path,
-            reason: format!("{:?}", e)
-        })?;
-
+fn show_from_instrument(show: ShowCommand, w: &mut dyn std::io::Write, instr_eq: m8_file_parser::InstrumentWithEq) -> Result<(), M8FstoErr> {
+    match show.show_command {
+        ShowTarget::Song => Ok(()) ,
+        ShowTarget::Chain { id: _ } => Ok(()),
+        ShowTarget::Phrase { id: _} => Ok(()),
+        ShowTarget::Instrument { id: _ } => {
+            write!(w, "{}", ElemDisplay {
+                instr: instr_eq.instrument,
+                ver: instr_eq.version
+            }).map_err(|_| M8FstoErr::PrintError)
+        },
+        ShowTarget::Table { id: _ } => {
+            writeln!(w, "{}", instr_eq.table_view()).map_err(|_| M8FstoErr::PrintError)
+        },
+        ShowTarget::Eq { id: _ } => {
+            match instr_eq.eq {
+                None => writeln!(w, "No eq saved in the instrument").map_err(|_| M8FstoErr::PrintError),
+                Some(equ) => {
+                    write!(w, "{}", ElemDisplay {
+                        instr: equ,
+                        ver: instr_eq.version
+                    }).map_err(|_| M8FstoErr::PrintError)
+                }
+            }
+        },
+    }
+}
+fn show_from_song(show: ShowCommand, w: &mut dyn std::io::Write, song: m8_file_parser::Song) -> Result<(), M8FstoErr> {
     match show.show_command {
         ShowTarget::Song => {
             writeln!(w, "{}", song.song).map_err(|_| M8FstoErr::PrintError)
@@ -168,5 +183,30 @@ pub fn show_element(show: ShowCommand, w: &mut dyn std::io::Write)  -> Result<()
                 ver: song.version
             }).map_err(|_| M8FstoErr::PrintError)
         },
+    }
+}
+
+pub fn show_element(show: ShowCommand, w: &mut dyn std::io::Write) -> Result<(), M8FstoErr> {
+    let song_path = PathBuf::from(show.file.clone());
+    let file_blob = fs::read(song_path.clone())
+        .map_err(|e|
+            M8FstoErr::CannotReadFile { path: song_path.clone(), reason: format!("{:?}", e) })?;
+
+    let mut reader = Reader::new(file_blob);
+
+    match m8_file_parser::Song::read_from_reader(&mut reader) {
+        Ok(song) => show_from_song(show, w, song),
+        Err(e) => {
+            reader.set_pos(0);
+            match m8_file_parser::Instrument::read_from_reader(&mut reader) {
+                Ok(instr_eq) => show_from_instrument(show, w, instr_eq),
+                Err(_) => {
+                    Err(M8FstoErr::UnparseableM8File {
+                        path: song_path,
+                        reason: format!("{:?}", e)
+                    })
+                }
+            }
+        }
     }
 }
