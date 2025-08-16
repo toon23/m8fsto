@@ -1,6 +1,12 @@
 # M8fsto changelog
 
+## v0.5
+
+ * `m8fsto show` command
+
+
 ## v0.4.1 (2025-07-23)
+
  * Minor error cleanup (think refactoring)
  * Expanded `m8fsto broken-search` command arguments: (colonel-blimp PR)
    * `m8fsto broken-search` now accepts multiple arguments

@@ -174,10 +174,16 @@ fn show_from_song(show: ShowCommand, w: &mut dyn std::io::Write, song: m8_file_p
                 ver: song.version
             }).map_err(|_| M8FstoErr::PrintError)
         },
-        ShowTarget::Table { id } => {
+        ShowTarget::Table { id: None } => {
+            writeln!(w, "Please select table number").map_err(|_| M8FstoErr::PrintError)
+        },
+        ShowTarget::Table { id: Some(id) } => {
             writeln!(w, "{}", song.table_view(id)).map_err(|_| M8FstoErr::PrintError)
         },
-        ShowTarget::Eq { id } => {
+        ShowTarget::Eq { id: None } => {
+            writeln!(w, "Please select eq number").map_err(|_| M8FstoErr::PrintError)
+        }
+        ShowTarget::Eq { id: Some(id) } => {
             write!(w, "{}", ElemDisplay {
                 instr: song.eqs[id].clone(),
                 ver: song.version

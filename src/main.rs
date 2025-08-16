@@ -51,13 +51,13 @@ enum ShowTarget {
     /// Print the content of a table
     Table {
         #[clap(value_parser=maybe_hex::<usize>)]
-        id: usize
+        id: Option<usize>
     },
 
     /// Print EQ information
     Eq {
         #[clap(value_parser=maybe_hex::<usize>)]
-        id: usize
+        id: Option<usize>
     }
 }
 

@@ -53,6 +53,35 @@ m8fsto ls-sample 'C:\Users\twins\tracks\M8 backup/**/*.m8s'
 Will display the list of all samples used in songs present in a backup folder
 or SD card.
 
+### show
+
+Show command can display the content of a m8 song or instrument file.
+
+```
+> m8fsto show '..\Songs\DONE\2025\07_JULY\FANFARE.m8s' phrase 0x66
+PHRASE 66
+
+  N   V  I  FX1   FX2   FX3
+0 C-6 64 60 ---   ---   FM316
+1 --- -- -- ---   ---   ---
+2 C-4 64 60 ---   ---   FM31a
+3 --- -- -- ---   ---   ---
+4 C-4 64 60 DEL02 ---   FM31b
+5 --- -- -- ---   ---   ---
+6 C-4 64 60 ---   ---   FM326
+7 --- -- -- ---   ---   ---
+8 C-6 64 60 DEL01 ---   FM316
+9 --- -- -- ---   ---   ---
+a C-6 64 60 ---   ---   FM316
+b C-5 64 60 DEL01 ---   FM319
+c C-5 74 60 ---   ---   FM316
+d C-4 74 60 DEL02 ---   FM31b
+e C-6 64 60 ---   ---   FM31d
+f --- -- -- ---   ---   ---
+```
+
+Please be sure to use 0x prefix for ID to use hexadecimal notation.
+
 ### grep-sample
 
 A reverse proposition from ls-sample, we have a sample, but we want to find
