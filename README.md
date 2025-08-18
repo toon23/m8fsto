@@ -11,6 +11,7 @@ Available command :
  * `prune-bundle` : Remove unused extra sample from a bundled song.
  * `mv`: move a file or folder, rewriting all song files using the moved samples
    to point to the new location.
+ * `show`: display part of m8 song files in the console.
 
 ## Examples
 
@@ -81,6 +82,14 @@ f --- -- -- ---   ---   ---
 ```
 
 Please be sure to use 0x prefix for ID to use hexadecimal notation.
+The followng elements can be printed:
+
+ * `song`: display the song view, with all the chains
+ * `chain`: display the phrase list of a specific chain (don't forget `0x` prefix)
+ * `phrase`: display a specific phrase (again, `0x`)
+ * `instrument`: display an instrument configuration (without table, but with modulators)
+ * `table`: display a table (you can reuse instrument number to display an instrument table)
+ * `eq`: display an equalizer configuration (no plotting)
 
 ### grep-sample
 
