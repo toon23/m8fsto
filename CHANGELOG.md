@@ -1,5 +1,9 @@
 # M8fsto changelog
 
+## v0.5.1
+
+ * `m8fsto show info` command, displaying information and stats of a song (jegasus request)
+
 ## v0.5
 
  * `m8fsto show` command

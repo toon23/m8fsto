@@ -30,6 +30,10 @@ enum ShowTarget {
     /// Print the whole song view
     Song,
 
+    /// Display various information about the song like version,
+    /// number of instruments, number of used samples
+    Info,
+
     /// Print the content of a chain
     Chain {
         #[clap(value_parser=maybe_hex::<usize>)]
@@ -58,7 +62,7 @@ enum ShowTarget {
     Eq {
         #[clap(value_parser=maybe_hex::<usize>)]
         id: Option<usize>
-    }
+    },
 }
 
 #[derive(Parser)]

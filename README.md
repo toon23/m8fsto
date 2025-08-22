@@ -84,12 +84,35 @@ f --- -- -- ---   ---   ---
 Please be sure to use 0x prefix for ID to use hexadecimal notation.
 The followng elements can be printed:
 
+ * `info`: display generali information/statistics about the song
  * `song`: display the song view, with all the chains
  * `chain`: display the phrase list of a specific chain (don't forget `0x` prefix)
  * `phrase`: display a specific phrase (again, `0x`)
  * `instrument`: display an instrument configuration (without table, but with modulators)
  * `table`: display a table (you can reuse instrument number to display an instrument table)
  * `eq`: display an equalizer configuration (no plotting)
+
+The generic `info` is here to get high level overview:
+
+```
+> m8fsto show '..\Songs\DONE\2025\07_JULY\FANFARE.m8s' info
+Version              : 6.0.1
+Name                 : FANFARE
+Instruments count    : 13
+            Wavsynth : 0
+          Macrosynth : 0
+             Sampler : 3
+             FmSynth : 9
+          HyperSynth : 0
+            MIDI out : 1
+           Ext instr : 0
+  used midi channels : 10
+Distinct samples     : 3
+Non flat EQs         : 8
+Non empty table      : 10
+Used chains          : 46
+Used phrases         : 82
+```
 
 ### grep-sample
 

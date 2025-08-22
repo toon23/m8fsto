@@ -1,4 +1,4 @@
-use std::{fmt::Display, fs, path::PathBuf};
+use std::{collections::HashSet, fmt::Display, fs, path::PathBuf};
 
 use m8_file_parser::{param_gatherer::{Describable, ParameterGatherer}, reader::Reader, Instrument, Version};
 
@@ -104,6 +104,7 @@ impl<T : Describable> Display for ElemDisplay<T> {
 fn show_from_instrument(show: ShowCommand, w: &mut dyn std::io::Write, instr_eq: m8_file_parser::InstrumentWithEq) -> Result<(), M8FstoErr> {
     match show.show_command {
         ShowTarget::Song => Ok(()) ,
+        ShowTarget::Info => Ok(()),
         ShowTarget::Chain { id: _ } => Ok(()),
         ShowTarget::Phrase { id: _} => Ok(()),
         ShowTarget::Instrument { id: _ } => {
@@ -128,10 +129,138 @@ fn show_from_instrument(show: ShowCommand, w: &mut dyn std::io::Write, instr_eq:
         },
     }
 }
+
+/// Structure used to instantiate Display instance for song info
+struct SongInfoDisplay<'a> {
+    song: &'a m8_file_parser::Song
+}
+
+struct InstrumentCounter {
+    pub wavsynth_count : usize,
+    pub macrosynth_count : usize,
+    pub fm_count : usize,
+    pub sampler_count : usize,
+    pub midi_count : usize,
+    pub external_count : usize,
+    pub hypersynth_count: usize,
+
+    pub used_midi_channel : HashSet<u8>
+}
+
+impl InstrumentCounter {
+    pub fn total(&self) -> usize {
+        self.wavsynth_count +
+            self.macrosynth_count +
+            self.fm_count +
+            self.sampler_count +
+            self.midi_count +
+            self.external_count +
+            self.hypersynth_count
+    }
+
+    pub fn count(mut self, instr: &m8_file_parser::Instrument) -> Self {
+        match instr {
+            Instrument::None => (),
+            Instrument::WavSynth(_) => self.wavsynth_count += 1,
+            Instrument::MacroSynth(_) => self.macrosynth_count += 1,
+            Instrument::Sampler(_) => self.sampler_count += 1,
+            Instrument::MIDIOut(midiout) => {
+                self.midi_count += 1;
+                self.used_midi_channel.insert(midiout.channel);
+            },
+            Instrument::FMSynth(_) => self.fm_count += 1,
+            Instrument::HyperSynth(_) => self.hypersynth_count += 1,
+            Instrument::External(ext) => {
+                self.external_count += 1;
+                self.used_midi_channel.insert(ext.channel);
+            },
+        };
+
+        self
+    }
+}
+
+impl Default for InstrumentCounter {
+    fn default() -> Self {
+        Self {
+            wavsynth_count: Default::default(),
+            macrosynth_count: Default::default(),
+            sampler_count: Default::default(),
+            midi_count: Default::default(),
+            fm_count: Default::default(),
+            external_count: Default::default(),
+            hypersynth_count: Default::default(),
+            used_midi_channel: Default::default()
+        }
+    }
+}
+
+impl Display for InstrumentCounter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Instruments count    : {}", self.total())?;
+        writeln!(f, "            Wavsynth : {}", self.wavsynth_count)?;
+        writeln!(f, "          Macrosynth : {}", self.macrosynth_count)?;
+        writeln!(f, "             Sampler : {}", self.sampler_count)?;
+        writeln!(f, "             FmSynth : {}", self.fm_count)?;
+        writeln!(f, "          HyperSynth : {}", self.hypersynth_count)?;
+        writeln!(f, "            MIDI out : {}", self.midi_count)?;
+        writeln!(f, "           Ext instr : {}", self.external_count)?;
+
+        let midi_vec : Vec<_> = self.used_midi_channel.iter().map(|c| format!("{}", c)).collect();
+        write!(f, "  used midi channels : {}", midi_vec.join(", "))?;
+        Ok(())
+    }
+}
+
+impl<'a> Display for SongInfoDisplay<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = self.song;
+
+
+        let samples : HashSet<_> = s.instruments
+            .iter()
+            .filter_map(|i|
+                match i {
+                    Instrument::Sampler(s) => Some(s.sample_path.clone()),
+                    _ => None
+                })
+            .collect();
+
+        writeln!(f, "Version              : {}", s.version)?;
+        writeln!(f, "Name                 : {}", s.name)?;
+
+        let instr_count = s.instruments.iter()
+            .fold(
+                InstrumentCounter::default(),
+                |acc, i| acc.count(i));
+
+        writeln!(f, "{}", instr_count)?;
+
+        writeln!(f, "Distinct samples     : {}", samples.len())?;
+
+        let eqs = s.eqs.iter().filter(|t| !t.is_empty()).count();
+        writeln!(f, "Non flat EQs         : {}", eqs)?;
+
+        let tables = s.tables.iter().filter(|t| !t.is_empty()).count();
+        writeln!(f, "Non empty table      : {}", tables)?;
+
+        let chains = s.chains.iter().filter(|c| !c.is_empty()).count();
+        writeln!(f, "Used chains          : {}", chains)?;
+
+        let phrases = s.phrases.iter().filter(|c| !c.is_empty()).count();
+        writeln!(f, "Used phrases         : {}", phrases)?;
+
+        Ok(())
+    }
+}
+
 fn show_from_song(show: ShowCommand, w: &mut dyn std::io::Write, song: m8_file_parser::Song) -> Result<(), M8FstoErr> {
     match show.show_command {
         ShowTarget::Song => {
             writeln!(w, "{}", song.song).map_err(|_| M8FstoErr::PrintError)
+        }
+        ShowTarget::Info => {
+            writeln!(w, "{}", SongInfoDisplay { song: &song }).map_err(|_| M8FstoErr::PrintError)
         }
         ShowTarget::Chain { id } => {
             writeln!(w, "{}", song.chains[id]).map_err(|_| M8FstoErr::PrintError)
