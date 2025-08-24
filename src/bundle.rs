@@ -114,7 +114,7 @@ pub fn bundle_song(cwd: &Path, path : &str, out_folder: &Option<String>) -> Resu
         out_folder
             .clone()
             .map_or_else(
-                || cwd.to_path_buf().join("bundle"),
+                || cwd.to_path_buf().join("Bundles"),
                 |e| PathBuf::from(e));
 
     on_file_blob(cwd, as_path, &out_folder, file_blob)

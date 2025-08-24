@@ -121,9 +121,11 @@ enum M8Commands {
 
     /// Try to find broken sample paths in songs or directories
     BrokenSearch {
+        /// When searching direct song, which root do we use?
+        root: Option<String>,
+
         /// Optional paths to process: directories or `.m8s` song files.
         /// If not set, the current working directory is used.
-
         paths: Vec<String>,
     },
 
@@ -175,8 +177,10 @@ fn main() {
         Some(M8Commands::GrepSample { pattern, path }) => {
             print_errors(grep_sample::grep_sample(cwd.as_path(), &pattern, &path))
         }
-        Some(M8Commands::BrokenSearch { paths }) => {
-            print_errors(broken_search::process_paths(cwd.as_path(), &paths))
+        Some(M8Commands::BrokenSearch { root, paths }) => {
+            let root =
+                root.map_or_else(|| cwd.clone(), |e| PathBuf::from(e));
+            print_errors(broken_search::process_paths(&root, &paths))
         }
         Some(M8Commands::Bundle { song, root, out_folder }) => {
             let root =

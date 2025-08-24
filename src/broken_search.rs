@@ -75,11 +75,12 @@ pub fn find_broken_samples_under_dir(cwd: &Path) -> Result<(), M8FstoErr>{
             M8FstoErr::InvalidSearchPattern { pattern: format!("{:?}", e) })?;
 
     let mut errors = vec![];
+    let cwd = cwd.to_path_buf();
     for entry in files {
         match entry {
             Err(_) => {}
             Ok(path) => {
-                if let Err(e) = find_broken_sample_in_song(path) {
+                if let Err(e) = find_broken_sample_in_song(&cwd, path) {
                     errors.push(e);
                 }
 
@@ -98,13 +99,13 @@ pub fn find_broken_samples_under_dir(cwd: &Path) -> Result<(), M8FstoErr>{
 
 
 /// Report broken samples in a single `.m8s` song file.
-pub fn find_broken_sample_in_song(song_path: PathBuf) -> Result<(), M8FstoErr> {
+pub fn find_broken_sample_in_song(backup_root : &PathBuf, song_path: PathBuf) -> Result<(), M8FstoErr> {
     let file_blob = fs::read(&song_path).map_err(|e| M8FstoErr::CannotReadFile {
         path: song_path.clone(),
         reason: format!("{:?}", e),
     })?;
 
-    match on_file_blob(&song_path.parent().unwrap_or(&song_path), &song_path, file_blob) {
+    match on_file_blob(&backup_root, &song_path, file_blob) {
         Ok(result) if result.is_empty() => Ok(()),
         Ok(result) => {
             println!("== Broken song {:?}", &song_path);
@@ -150,8 +151,9 @@ pub fn process_paths(cwd: &Path, paths: &[String]) -> Result<(), M8FstoErr> {
         }
     }
 
+    let cwd = &cwd.to_path_buf();
     for song in songs {
-        if let Err(e) = find_broken_sample_in_song(song) {
+        if let Err(e) = find_broken_sample_in_song(cwd, song) {
             errors.push(e);
         }
     }
