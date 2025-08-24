@@ -101,10 +101,28 @@ impl<T : Describable> Display for ElemDisplay<T> {
     }
 }
 
+fn instrument_kind(i: &Instrument) -> &'static str {
+    match i {
+        Instrument::WavSynth(_) => "WavSynth",
+        Instrument::MacroSynth(_) => "MacroSynth",
+        Instrument::Sampler(_) => "Sample",
+        Instrument::MIDIOut(_) => "MIDIOut",
+        Instrument::FMSynth(_) => "FMSynth",
+        Instrument::HyperSynth(_) => "HyperSynth",
+        Instrument::External(_) => "External",
+        Instrument::None => "None"
+    }
+}
+
 fn show_from_instrument(show: ShowCommand, w: &mut dyn std::io::Write, instr_eq: m8_file_parser::InstrumentWithEq) -> Result<(), M8FstoErr> {
     match show.show_command {
         ShowTarget::Song => Ok(()) ,
-        ShowTarget::Info => Ok(()),
+        ShowTarget::Info => {
+            writeln!(w, "Version : {}", instr_eq.version).map_err(|_| M8FstoErr::PrintError)?;
+            writeln!(w, "Name    : {}", instr_eq.instrument.name().unwrap_or("")).map_err(|_| M8FstoErr::PrintError)?;
+            writeln!(w, "Kind    : {}", instrument_kind(&instr_eq.instrument)).map_err(|_| M8FstoErr::PrintError)?;
+            Ok(())
+        },
         ShowTarget::Chain { id: _ } => Ok(()),
         ShowTarget::Phrase { id: _} => Ok(()),
         ShowTarget::Instrument { id: _ } => {

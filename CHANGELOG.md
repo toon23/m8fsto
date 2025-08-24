@@ -1,5 +1,11 @@
 # M8fsto changelog
 
+## vNext
+ 
+ * Minor fix in `broken-search`
+ * Display some information about instruments
+  
+
 ## v0.5.1
 
  * `m8fsto show info` command, displaying information and stats of a song (jegasus request)
