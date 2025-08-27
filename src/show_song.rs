@@ -116,7 +116,9 @@ fn instrument_kind(i: &Instrument) -> &'static str {
 
 fn show_from_instrument(show: ShowCommand, w: &mut dyn std::io::Write, instr_eq: m8_file_parser::InstrumentWithEq) -> Result<(), M8FstoErr> {
     match show.show_command {
-        ShowTarget::Song => Ok(()) ,
+        ShowTarget::Song => Ok(()),
+        ShowTarget::Mixer => Ok(()),
+        ShowTarget::Effects => Ok(()),
         ShowTarget::Info => {
             writeln!(w, "Version : {}", instr_eq.version).map_err(|_| M8FstoErr::PrintError)?;
             writeln!(w, "Name    : {}", instr_eq.instrument.name().unwrap_or("")).map_err(|_| M8FstoErr::PrintError)?;
@@ -276,6 +278,18 @@ fn show_from_song(show: ShowCommand, w: &mut dyn std::io::Write, song: m8_file_p
     match show.show_command {
         ShowTarget::Song => {
             writeln!(w, "{}", song.song).map_err(|_| M8FstoErr::PrintError)
+        }
+        ShowTarget::Effects => {
+            write!(w, "{}", ElemDisplay {
+                instr: song.effects_settings,
+                ver: song.version
+            }).map_err(|_| M8FstoErr::PrintError)
+        }
+        ShowTarget::Mixer => {
+            write!(w, "{}", ElemDisplay {
+                instr: song.mixer_settings,
+                ver: song.version
+            }).map_err(|_| M8FstoErr::PrintError)
         }
         ShowTarget::Info => {
             writeln!(w, "{}", SongInfoDisplay { song: &song }).map_err(|_| M8FstoErr::PrintError)

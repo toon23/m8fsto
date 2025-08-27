@@ -34,6 +34,12 @@ enum ShowTarget {
     /// number of instruments, number of used samples
     Info,
 
+    /// Display mixer settings
+    Mixer,
+
+    /// Display effect settings
+    Effects,
+
     /// Print the content of a chain
     Chain {
         #[clap(value_parser=maybe_hex::<usize>)]
